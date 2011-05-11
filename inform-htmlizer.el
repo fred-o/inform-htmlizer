@@ -6,7 +6,7 @@ The story headline is \"A Short Story About Inevitability\"
 The story genre is \"Historical\"
 
 
-   Include Case Management by Emily Short.
+    Include Case Management by Emily Short.
 Include Basic Screen Effects by Emily Short.
 Include Conversation Framework by Eric Eve.
 Include Conversation Suggestions by Eric Eve.
@@ -23,19 +23,25 @@ Carry out switching when the player is Edward: now the player is Roger. Carry ou
 
 Report switching: say \"You are now [the player].\"   ")
 
+(defun inform7-indent-class (str)
+  "Calculate the class name used for indentation. STR is a string
+  of whitespace."
+  (let ((i (+ (count ?\  str)
+	      (* (count ?\t str) 4))))
+    (concat "indent-" (int-to-string (/ i 4)))))
+
 (setq *inform7-tokens* 
       '(("^[\t ]+" . (lambda (s) 
 		       (push 'indent *inform7-parse-stack*)
-		       (concat "<div class=\"indent\">")))
+		       (concat "<div class=\"" (inform7-indent-class s) "\">")))
 	("\\(Volume\\|Book\\|Part\\|Chapter\\|Section\\|Table\\).*?$" . (lambda (s) (concat "<div class=\"heading\">" s "</div>")))
 	("$" . (lambda (s) 
 		 (if (eq 'indent (car *inform7-parse-stack*))
 		     (progn
 		       (pop *inform7-parse-stack*)
 		       "</div>\n")
-		   "\n")))
+		   "<br/>\n")))
 	("\"" . (lambda (s) 
-		  (princ *inform7-parse-stack*)
 		  (if (eq 'quote (car *inform7-parse-stack*))
 		      (progn (pop *inform7-parse-stack*)
 			     "\"</span>")
