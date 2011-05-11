@@ -46,7 +46,10 @@ Report switching: say \"You are now [the player].\"   ")
 		   "<span class=\"bracket\">["))
 	("\\]" . (lambda (s) 
 		   (pop *inform7-parse-stack*)
-		   "]</span>"))))
+		   "]</span>"))
+	("^." . (lambda (s)
+		  (push 'indent *inform7-parse-stack*)
+		  (concat "<div>" s)))))
 
 (defun inform7-next-token (str start)
   (when-let (m (remove-if-not #'identity
