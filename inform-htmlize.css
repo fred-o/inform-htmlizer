@@ -1,22 +1,22 @@
-div.i7-sample div {
-	margin-top: 0px;
-	margin-bottom: 0px;
-	color: #683726;
+div.i7-sample {
+	margin: 1.5em 0;
+	color: #000;
 }
 
 div.i7-sample div.i7-quote {
 	display: inline;
-	color: #000;
+	color: #640d17;
 }
 
 div.i7-sample div.i7-bracket {
 	display: inline;
-	color: #283629;
+	color: #222;
 }
 
 div.i7-sample div.i7-heading {
-	font-size: 1.5em;
+	font-size: 1.1em;
 	font-weight: bold;
+	color: #000;
 }
 
 div.i7-sample div.i7-indent-1 { margin-left: 2em; }
