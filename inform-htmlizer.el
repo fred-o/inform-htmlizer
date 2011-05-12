@@ -30,15 +30,17 @@ Report switching: say \"You are now [the player].\"   ")
 	      (* (count ?\t str) 4))))
     (concat "i7-indent-" (int-to-string (/ i 4)))))
 
+(defmacro inform7-if-parsing (i e1 e2)
+  `(if (eq ,i (car *inform7-parse-stack*))
+       (progn (pop *inform7-parse-stack*)
+	      ,e1)
+     ,e2))
+
 (setq *inform7-tokens*
       (macrolet ((begins (r i e) `(cons ,r (lambda (s) (push ',i *inform7-parse-stack*) ,e)))
 		 (produces (r e) `(cons ,r (lambda (s) ,e)))
-		 (toggles (r i e1 e2) `(cons ,r (lambda (s) (if (eq ',i (car *inform7-parse-stack*))
-								(progn (pop *inform7-parse-stack*) ,e2) 
-							      (progn (push ',i *inform7-parse-stack*),e1)))))
-		 (ends (r i e1 &optional e2) `(cons ,r (lambda (s) (if (eq ',i (car *inform7-parse-stack*))
-							     (progn (pop *inform7-parse-stack*) ,e1)
-							     ,e2)))))
+		 (toggles (r i e1 e2) `(cons ,r (lambda (s) (inform7-if-parsing ',i ,e2 (progn (push ',i *inform7-parse-stack*) ,e1)))))
+		 (ends (r i e1 &optional e2) `(cons ,r (lambda (s) (inform7-if-parsing ',i ,e1 ,e2)))))
 	(list 
 	 (begins   "^[\t ]+" indent  (concat "<div class=\"" (inform7-indent-class s) "\">"))
 	 (produces "\\(Volume\\|Book\\|Part\\|Chapter\\|Section\\|Table\\).*?$" (concat "<div class=\"i7-heading\">" s "</div>"))
