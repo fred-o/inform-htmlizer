@@ -1,0 +1,30 @@
+div.i7-sample div {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	color: #683726;
+}
+
+div.i7-sample div.i7-quote {
+	display: inline;
+	color: #000;
+}
+
+div.i7-sample div.i7-bracket {
+	display: inline;
+	color: #283629;
+}
+
+div.i7-sample div.i7-heading {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+div.i7-sample div.i7-indent-1 { margin-left: 2em; }
+div.i7-sample div.i7-indent-2 { margin-left: 4em; }
+div.i7-sample div.i7-indent-3 { margin-left: 6em; }
+div.i7-sample div.i7-indent-4 { margin-left: 8em; }
+div.i7-sample div.i7-indent-5 { margin-left: 10em; }
+div.i7-sample div.i7-indent-6 { margin-left: 12em; }
+div.i7-sample div.i7-indent-7 { margin-left: 14em; }
+div.i7-sample div.i7-indent-8 { margin-left: 16em; }
+div.i7-sample div.i7-indent-9 { margin-left: 18em; }

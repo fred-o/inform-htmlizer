@@ -1,27 +1,4 @@
-
 (setq *inform7-parse-stack* nil)
-
-(setq *inform7-parse-doc* "\"Satisfaction\" by Fredrik Appelberg
-The story headline is \"A Short Story About Inevitability\"
-The story genre is \"Historical\"
-
-
-    Include Case Management by Emily Short.
-Include Basic Screen Effects by Emily Short.
-Include Conversation Framework by Eric Eve.
-Include Conversation Suggestions by Eric Eve.
-
-Use no scoring.
-
-Part - Mechanics
-
-Chapter - Switching POV
-
-Switching is an action applying to nothing. Understand \"switch\" as switching.
-
-Carry out switching when the player is Edward: now the player is Roger. Carry out switching when the player is Roger: now the player is Edward. 
-
-Report switching: say \"You are now [the player].\"   ")
 
 (defun inform7-indent-class (str)
   "Calculate the class name used for indentation. STR is a string
@@ -31,6 +8,8 @@ Report switching: say \"You are now [the player].\"   ")
     (concat "i7-indent-" (int-to-string (/ i 4)))))
 
 (defmacro inform7-if-parsing (i e1 e2)
+  "Helper macro that executes either E1 or E2 depending on
+whether we're currently parsing I"
   `(if (eq ,i (car *inform7-parse-stack*))
        (progn (pop *inform7-parse-stack*)
 	      ,e1)
@@ -41,38 +20,53 @@ Report switching: say \"You are now [the player].\"   ")
 		 (produces (r e) `(cons ,r (lambda (s) ,e)))
 		 (toggles (r i e1 e2) `(cons ,r (lambda (s) (inform7-if-parsing ',i ,e2 (progn (push ',i *inform7-parse-stack*) ,e1)))))
 		 (ends (r i e1 &optional e2) `(cons ,r (lambda (s) (inform7-if-parsing ',i ,e1 ,e2)))))
-	(list 
-	 (begins   "^[\t ]+" indent  (concat "<div class=\"" (inform7-indent-class s) "\">"))
-	 (produces "\\(Volume\\|Book\\|Part\\|Chapter\\|Section\\|Table\\).*?$" (concat "<div class=\"i7-heading\">" s "</div>"))
-	 (ends     "$"       indent  "</div>\n" "<br/>\n")
-	 (toggles  "\""      quote   "<span class=\"i7-quote\">\"" "\"</span>")
-	 (begins   "\\["     bracket "<span class=\"i7-bracket\">[")
-	 (ends     "\\]"     bracket "]</span>")
-	 (begins   "^."      indent  (concat "<div>" s)))))
+	 (list 
+	  (begins   "^."      indent  (concat "<div>" s))
+	  (ends     "$"       indent  "</div>\n" "<br/>\n")
+	  (begins   "^[\t ]+" indent  (concat "<div class=\"" (inform7-indent-class s) "\">"))
+	  (produces "\\(Volume\\|Book\\|Part\\|Chapter\\|Section\\|Table\\).*?$" (concat "<div class=\"i7-heading\">" s "</div>\n"))
+	  (toggles  "\""      quote   "<div class=\"i7-quote\">\"" "\"</div>")
+	  (begins   "\\["     bracket "<div class=\"i7-bracket\">[")
+	  (ends     "\\]"     bracket "]</div>"))))
 
 (defun inform7-next-token (str start)
   (when-let (m (remove-if-not #'identity
-			      (mapcar (lambda (tok)
-					(when-let (beg (string-match (car tok) str start))
-					  (list beg (match-end 0) (cdr tok))))
-				      *inform7-tokens*)))
+                             (mapcar (lambda (tok)
+                                       (when-let (beg (string-match (car tok) str start))
+                                         (list beg (match-end 0) (cdr tok))))
+                                     *inform7-tokens*)))
     (reduce (lambda (a b) (if (< (car a) (car b)) a b)) m)))
 
-(defun inform7-htmlize ()
-  (interactive)
-  (let ((*inform7-parse-stack* nil)
-	(buf (generate-new-buffer "*inform7-htmlize*")))
-    (switch-to-buffer buf)
-    (nxml-mode)
-    (insert (apply 'concat
-		   (loop for start = 0 then (if (= start end) (1+ start) end) ;; handle zero-length matches
-			 while (< start (length *inform7-parse-doc*))
-			 for m = (inform7-next-token *inform7-parse-doc* start)
-			 while m
-			 for beg = (first m)
-			 for end = (second m)
-			 append (list 
-				 (substring *inform7-parse-doc* start beg)
-				 (apply (third m) (list (substring  *inform7-parse-doc* beg end)))))))))
+ (defun inform7-htmlize (input &optional emit-body)
+   "Produces an HTML representation of the given Inform7 source
+INPUT. If invoked interactively, the current region (if active)
+or the entire buffer will be used as INPUT. If EMIT-BODY, or the
+universal prefix argument, is true, a HTML preamble will also be
+added."
+   (interactive 
+    (list (if (region-active-p) (buffer-substring (region-beginning) (region-end))
+	    (buffer-string))
+	  current-prefix-arg))
+   (let ((*inform7-parse-stack* nil)
+	 (buf (generate-new-buffer "*inform7-htmlize*")))
+     (switch-to-buffer buf)
+     (when emit-body
+       (insert "<html>\n<head>\n<link rel=\"stylesheet\" href=\"inform-htmlize.css\" />\n</head>\n<body>\n"))
+     (insert "<div class=\"i7-sample\">\n")
+     (insert (apply 'concat
+		    (loop for start = 0 then (if (= beg end) (1+ end) end) ;; handle zero-length matches
+			  while (< start (length input))
+			  for m = (inform7-next-token input start)
+			  while m
+			  for beg = (first m)
+			  for end = (second m)
+			  append (list 
+				  (substring input start beg)
+				  (apply (third m) (list (substring input beg end)))))))
+     (insert "\n</div>\n")
+     (when emit-body
+       (insert "</body>\n\</html>"))
+     (html-mode)
+     (indent-region 0 (buffer-end 1))))
 
 (provide 'inform-htmlizer)
