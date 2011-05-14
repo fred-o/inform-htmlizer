@@ -28,4 +28,4 @@ Limitations
  * It doesn't handle comments at all.
 
 [i7]:http://inform7.com
-[css]:blob/master/inform-htmlize.css
+[css]:https://github.com/fred-o/inform-htmlizer/blob/master/inform-htmlize.css
