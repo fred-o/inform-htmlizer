@@ -3,6 +3,8 @@
 ;;
 ;; Author  : Fredrik Appelberg <fredrik.appelberg@gmail.com>
 ;; Version : 0.1
+;; Licence : Public Domain
+;;
 
 (setq *inform7-parse-stack* nil)
 
